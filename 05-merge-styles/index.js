@@ -1,14 +1,15 @@
-const { readdir, stat, copyFile } = require("fs/promises");
-const { createReadStream, createWriteStream } = require("fs");
+// const { readdir, stat} = require("fs/promises");
+const fs = require("fs");
 const path = require("path");
-const { pipeline } = require('stream/promises');
+// const { pipeline } = require("stream/promises");
 
-const srcPath = path.join(__dirname, "styles");
-const targetPath = path.join(__dirname, "project-dist", "bundle.css");
+/* const srcPath = path.join(__dirname, "styles");
 
-async function mergeStyles(sourcePath, targetPath) {
+
+async function mergeStyles(sourcePath) {
   try {
-    const sourceFilesArr = await readdir(sourcePath, );
+    const targetPath = path.join(__dirname, "project-dist", "bundle.css");
+    const sourceFilesArr = await readdir(sourcePath,);
     const sourceFilePathArr = sourceFilesArr.map((item) =>
       path.join(sourcePath, item)
     );
@@ -19,20 +20,40 @@ async function mergeStyles(sourcePath, targetPath) {
         onlyFiles.push(pathFile);
       }
     }
-  const sourceCssPathArr = onlyFiles.filter((item) => path.extname(item) === ".css");
-
+    const sourceCssPathArr = onlyFiles.filter((item) => path.extname(item) === ".css");
 
     for (let filePath of sourceCssPathArr) {
-      const input = createReadStream(filePath);
-      const output = createWriteStream(targetPath, {flags: "a"});
-      await pipeline(input, output, (err) => {
+      const input = fs.createReadStream(filePath);
+      const output = fs.createWriteStream(targetPath);
+      console.log(output);
+      await pipeline(input, output, err => {
         if (err) {
-          console.log(err.message);
+          console.log(err);
         }
       });
     }
   } catch (err) {
-    console.log(err.message);
+    console.log(err);
   }
 }
-mergeStyles(srcPath, targetPath);
+
+mergeStyles(srcPath); */
+const srcPath = path.join(__dirname, "styles");
+const targetPath = path.join(__dirname, "project-dist", "bundle.css");
+let output = fs.createWriteStream(targetPath);
+
+fs.readdir(srcPath, {withFileTypes: true }, (err, files) => {
+  if (err) {
+    console.log(err);
+  }
+  for (let filePath of files) {
+    if (filePath.isFile() && path.extname(filePath.name) == ".css") {
+      let  input = fs.createReadStream(path.join(srcPath, filePath.name), "utf-8")
+      let data = "";
+      input.on("data", (chunk) => output.write((data += chunk)));
+    }
+   }
+});
+
+
+
